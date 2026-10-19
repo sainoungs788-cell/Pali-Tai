@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myanmar Phonetic & Transliteration Dictionary</title>
+    <!-- Tailwind CSS for modern, responsive UI -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white shadow-md py-6 px-4 text-center">
+        <h1 class="text-2xl md:text-3xl font-bold">Myanmar Script Transliteration Tool</h1>
+        <p class="text-indigo-200 text-sm mt-1">Based on standard consonant-vowel and nasal mapping charts</p>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-5xl">
+        
+        <!-- Search & Filter Bar -->
+        <div class="mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+            <label for="searchInput" class="block text-sm font-medium text-slate-700 mb-2">Search Characters or Transliteration:</label>
+            <input type="text" id="searchInput" placeholder="e.g. ka, ဇ, တ်တ..." 
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+
+        <!-- Data Table Section -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="mappingTable">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-700 uppercase text-xs tracking-wider border-b border-slate-200">
+                            <th class="py-3 px-4">Myanmar Script Series</th>
+                            <th class="py-3 px-4">Latin Transliteration</th>
+                            <th class="py-3 px-4">Mapped Variant / Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 text-sm" id="tableBody">
+                        <!-- Data rows populated dynamically via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-400 py-4 text-center text-xs">
+        <p>&copy; 2026 Myanmar Transliteration Project. Ready for GitHub Pages & Acode.</p>
+    </footer>
+
+    <!-- JavaScript Dataset and Logic -->
+    <script>
+        // Dataset extracted from the PDF mapping document
+        const transliterationData = [
+            { script: "က၊ ကာ၊ ကိ၊ ကီ၊ ကု၊ ကူ၊ ကေ၊ ကော", latin: "ka, kā, ki, ki, ku, kū, ke, ko", notes: "၈၊ ၈၇၊ ဂိ၊ ဂု၊ ဂူ၊ ဂေ" },
+            { script: "ခ၊ ခါ၊ ခိ၊ ခီ၊ ခု၊ ခူ၊ ခေ၊ ခေါ", latin: "kha, khā, khi, khī, khu, khū, khe, kho", notes: "໑໑" },
+            { script: "ဂ၊ ဂါ၊ ဂိ၊ ဂီ၊ ဂု၊ ဂူ၊ ဂေ၊ ဂေါ", latin: "ga, gā, gi, gi, gu, gū, ge, go", notes: "Standard series" },
+            { script: "ဃ၊ ဃာ၊ ဃိ၊ ဃီ၊ ဃု၊ ဃူ၊ ဃေ၊ ဃော", latin: "gha, ghā, ghi, ghĩ, ghu, ghũ, ghe, gho", notes: "ຊາ ຊາ" },
+            { script: "င၊ ငါ၊ ငိ၊ ငီ၊ ငု၊ ငူ၊ ငေ၊ ငော", latin: "na, nã, hi, ne, no", notes: "ci ci" },
+            { script: "စ၊ စာ၊ စိ၊ စီ၊ စု၊ သူ၊ စေ၊ စော", latin: "ca, că, ci, cì, cu, cũ, ce, co", notes: "coi coi" },
+            { script: "ဆ၊ ဆာ၊ ဆိ၊ ဆီ၊ ဆု၊ ဆူ၊ ဆေ၊ ဆော", latin: "cha, chã, chi, chĩ, chu, chủ, che, cho", notes: "Standard series" },
+            { script: "ဇ၊ ဇာ၊ ဇိ၊ ဇီ၊ ဇု၊ ဇူ၊ ဇေ၊ ဇော", latin: "ja, jā, ji, jī, ju, jū, je, jo", notes: "so, ကိ၊ ကီ၊ ကု၊ ကူ၊ ကေ" },
+            { script: "ဈ၊ ဈာ၊ ဈိ၊ ဈီ၊ ဈု၊ ဈူ၊ ဈေ၊ ဈော", latin: "jha, jhā, jhi, jhī, jhu, jhū, jhe, jho", notes: "သ၊ သ၊ သိ၊ သီ၊ သု၊ သူ၊ သေ" },
+            { script: "ဋ၊ ဋာ၊ ဋိ၊ ဋီ၊ ဋု၊ ဋူ၊ ဋေ၊ ဋော", latin: "ta, ta, ti, ti, tu, tū, te, to", notes: "ာ၊ တ၊ တိ၊ တီ၊ တု၊ တူ၊ တေ" },
+            { script: "ဌ၊ ဌာ၊ ဌိ၊ ဌီ၊ ဌု၊ ဌူ၊ ဌေ၊ ဌော", latin: "tha, thã, thi, thì, thu, thù, the, tho", notes: "Standard series" },
+            { script: "ဍ၊ ဍာ၊ ဍိ၊ ဍီ၊ ဍု၊ ဍူ၊ ဍေ၊ ဍော", latin: "da, da, di, di, du, dü, de, do", notes: "တတု၊ တိ၊ တီ၊ တု၊ တူ၊ တေ" },
+            { script: "ဎ၊ ဎာ၊ ဎိ၊ ဎီ၊ ဎု၊ ဎူ၊ ဎေ၊ ဎော", latin: "dha, dhā, dhi, chĩ, dhu, chủ, dhe, dho", notes: "Standard series" },
+            { script: "ဏ၊ ဏာ၊ ဏိ၊ ဏီ၊ ဏု၊ ဏူ၊ ဏေ၊ ဏော", latin: "na, na, ni, ni, nu, nu, ne, no", notes: "ဆ၊ ဆိ၊ ဆီ၊ ဆု၊ ဆူ၊ ဆေ" },
+            { script: "တ၊ တာ၊ တိ၊ တီ၊ တု၊ တူ၊ တေ၊ တော", latin: "ta, ta, ti, ti, tu, tu, te, to", notes: "တ၊ တ၊ တိ၊ တီ၊ တု၊ တူ၊ တေ" },
+            { script: "ထ၊ ထာ၊ ထိ၊ ထီ၊ ထု၊ ထူ၊ ထေ၊ ထော", latin: "tha, tha, thi, thi, thu, thu, the, tho", notes: "ထ၊ ထ၊ ထိ၊ ထီ၊ ထု၊ ထူ၊ ထေ" },
+            { script: "ဒ၊ ဒါ၊ ဒိ၊ ဒီ၊ ဒု၊ ဒူ၊ ဒေ၊ ဒော", latin: "da, da, di, di, du, dü, de, do", notes: "တ၊ တတု၊ တိ၊ တီ၊ တု၊ တူ၊ တေ" },
+            { script: "ဓ၊ ဓာ၊ ဓိ၊ ဓီ၊ ဓု၊ ဓူ၊ ဓေ၊ ဓော", latin: "dha, dhā, dhi, dhī, dhu, dhũ, dhe, dho", notes: "Standard series" },
+            { script: "န၊ နာ၊ နိ၊ နီ၊ နု၊ နူ၊ နေ၊ နော", latin: "na, nā, ni, ni, nu, nū, ne, no", notes: "ဆ၊ ဆ၊ ဆိ၊ ဆီ၊ ဆု၊ ဆူ၊ ဆေ" },
+            { script: "ပ၊ ပါ၊ ပိ၊ ပီ၊ ပု၊ ပူ၊ ပေ၊ ပော", latin: "pa, pā, pi, pī, pu, pū, pe, po", notes: "Standard series" },
+            { script: "ဖ၊ ဖာ၊ ဖိ၊ ဖီ၊ ဖု၊ ဖူ၊ ဖေ၊ ဖော", latin: "pha, phā, phi, phĩ, phu, phù, phe, pho", notes: "ບຣາ, ເບ" },
+            { script: "ဗ၊ ဗာ၊ ဗိ၊ ဗီ၊ ဗု၊ ဗူ၊ ဗေ၊ ဗော", latin: "ba, bā, bi, bī, bu, bū, be, bo", notes: "Standard series" },
+            { script: "ဘ၊ ဘာ၊ ဘိ၊ ဘီ၊ ဘု၊ ဘူ၊ ဘေ၊ ဘော", latin: "bha, bhā, bhi, bhī, bhu, bhū, bhe, bho", notes: "Standard series" },
+            { script: "မ၊ မာ၊ မိ၊ မီ၊ မု၊ မူ၊ မေ၊ မော", latin: "ma, mā, mi, mī, mu, mũ, me, mo", notes: "Standard series" },
+            { script: "ယ၊ ယာ၊ ယိ၊ ယီ၊ ယု၊ ယူ၊ ယေ၊ ယော", latin: "ya, ya, yi, yī, yu, yū, ye, yo", notes: "Standard series" },
+            { script: "ရ၊ ရာ၊ ရိ၊ ရီ၊ ရု၊ ရူ၊ ရေ၊ ရော", latin: "ra, rā, ri, ri, ru, ru, re, ro", notes: "Standard series" },
+            { script: "လ၊ လာ၊ လိ၊ လီ၊ လု၊ လူ၊ လေ၊ လော", latin: "la, lā, li, li, lu, lū, le, lo", notes: "လု၊ လိ၊ လီ၊ လု၊ လူ၊ လေ" },
+            { script: "ဝ၊ ဝါ၊ ဝိ၊ ဝီ၊ ဝု၊ ဝူ၊ ဝေ၊ ဝော", latin: "wa, wā, wi, wi, wu, wū, we, wo", notes: "Standard series" },
+            { script: "သ၊ သာ၊ သိ၊ သီ၊ သု၊ သူ၊ သေ၊ သော", latin: "sa, sā, si, si, su, sū, se, so", notes: "သ၊ သ၊ သိ၊ သီ၊ သု၊ သူ၊ သေ" },
+            { script: "ဟ၊ ဟာ၊ ဟိ၊ ဟီ၊ ဟု၊ ဟူ၊ ဟေ၊ ဟော", latin: "ha, ha, hi, hĩ, hu, hũ, he, ho", notes: "Standard series" },
+            { script: "ဠ၊ ဠာ၊ ဠိ၊ ဠီ၊ ဠု၊ ဠူ၊ ဠေ၊ ဠော", latin: "la, lā, li, li, lu, lū, le, lo", notes: "လ၊ လ၊ လိ၊ လီ၊ လု၊ လူ၊ လေ" },
+            { script: "က္က၊ က္ကာ၊ က္ကိ၊ က္ကီ၊ က္ကု၊ က္ကူ၊ က္ကေ၊ က္ကော", latin: "kka, kkā, kki, kki, kku, kkū, kke, kko", notes: "ဂ်၊ ဂ်ဂေ" },
+            { script: "က္ခ၊ က္ခာ၊ က္ခိ၊ က္ခီ၊ က္ခု၊ က္ခူ၊ က္ခေ၊ က္ခော", latin: "kkha, kkhā, kkhi, kkhī, kkhu, kkhū, kkhe, kkho", notes: "ဂ်ခ၊ ဂ်ခိ၊ ဂ်ခု၊ ဂ်ခူ" },
+            { script: "ဂ္ဂ၊ ဂ္ဂါ၊ ဂ္ဂိ၊ ဂ္ဂီ၊ ဂ္ဂု၊ ဂ္ဂူ၊ ဂွေ၊ ဂွော", latin: "gga, gga, ggi, ggi, ggu, ggu, gge, ggo", notes: "ဖ်စီ၊ ခ်၊ ဖ်အေ" },
+            { script: "င်ဂ၊ င်ဂါ၊ င်ဂိ၊ င်ဂီ၊ င်ဂု၊ င်ဂူ၊ င်ဂေ၊ င်ဂော", latin: "nka, ṅkā, ṅki, ṅkī, ṅku, ṅkū, ṅke, ṅko", notes: "Nasal combination" },
+            { script: "စ္စ၊ စ္စာ၊ စ္စိ၊ စ္စီ၊ စ္စု၊ စ္စူ၊ စ္စေ၊ စ္စော", latin: "cca, ccā, cci, cci, ccu, ccū, cce, cco", notes: "လ်လ၊ လ်၊ လ်လိ၊ လ်လီ၊ လ်လု" },
+            { script: "ဇ္ဇ၊ ဇ္ဇာ၊ ဇ္ဇိ၊ ဇ္ဇီ၊ ဇ္ဇု၊ ဇ္ဇူ၊ ဇ္ဇေ၊ ဇ္ဇော", latin: "ja, ja, ji, ji, jju, jjū, je, jo", notes: "က်ကိ၊ ကီ၊ က်ကု၊ က်ကူ၊ က်ကေ" },
+            { script: "တ္တ၊ တ္တာ၊ တ္တိ၊ တ္တီ၊ တ္တု၊ တ္တူ၊ တ္တေ၊ တ္တော", latin: "tta, ttā, tti, tti, ttu, ttu, tte, tto", notes: "တ်တ၊ တ်တ၊ တ်တိ၊ တ်တီ၊ တ်တု" },
+            { script: "ပ္ပ၊ ပ္ပါ၊ ပ္ပိ၊ ပ္ပီ၊ ပ္ပု၊ ပ္ပူ၊ ပ္ပေ၊ ပ္ပေါ", latin: "ppa, ppā, ppi, ppī, ppu, ppu, ppe, ppo", notes: "Standard cluster mapping" },
+            { script: "မ်မ၊ မ်မာ၊ မ်မိ၊ မ်မီ၊ မ်မု၊ မ်မူ၊ မ်မေ၊ မ်မော", latin: "mma, mmā, mmi, mmi, mmu, mmü, mme, mmo", notes: "မ်မ၊ မ်မိ၊ မ်မီ၊ မ်မု၊ မ်မူ" },
+            { script: "လ္လ၊ လ္လာ၊ လ္လိ၊ လ္လီ၊ လ္လု၊ လ္လူ၊ လ္လေ၊ လ္လော", latin: "lla, llā, lli, lli, llu, llū, lle, llo", notes: "လ်လ၊ လ်၊ လ်လိ၊ လ်လီ" },
+            { script: "ဿ၊ ဿာ၊ ဿိ၊ ဿီ၊ ဿု၊ ဿူ၊ ဿေ၊ ဿော", latin: "ssa, ssā, ssi, ssī, ssu, ssū, sse, sso", notes: "သိ၊ သ်သီ၊ သ်သု၊ သ်သူ၊ သ်သေ" },
+            { script: "ကံ၊ ကိံ၊ ကုံ", latin: "kam, kim, kum", notes: "ဂံ၊ ဂုံ" },
+            { script: "ခံ၊ ခိံ၊ ခုံ", latin: "kham, khim, khum", notes: "Nasal variations" },
+            { script: "ဂံ၊ ဂိံ၊ ဂုံ", latin: "gam, gim, gum", notes: "Nasal variations" },
+            { script: "စံ၊ စိံ၊ စုံ", latin: "cam, cim, cum", notes: "cỏi, cỔI, CÓ" },
+            { script: "တံ၊ တိံ၊ တုံ", latin: "tam, tim, tum", notes: "တံ၊ တိံ၊ တုံ" },
+            { script: "ယံ၊ ယိံ၊ ယုံ", latin: "yam, yim, yum", notes: "ယံ၊ ယိံ၊ ယုံ" },
+            { script: "လံ၊ လိံ၊ လုံ", latin: "lam, lim, lum", notes: "လံ၊ လိ၊ လုံ" },
+            { script: "သံ၊ သိံ၊ သုံ", latin: "sam, sim, sum", notes: "သံ၊ သိံ၊ သုံ" },
+            { script: "သ္မိံ၊ သ္မိံ၊ သ္မုံ", latin: "smam, smim, smum", notes: "မံ၊ သ်မိ၊ သ်မုံ" }
+        ];
+
+        const tableBody = document.getElementById('tableBody');
+        const searchInput = document.getElementById('searchInput');
+
+        function renderTable(data) {
+            tableBody.innerHTML = '';
+            if (data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="py-4 px-4 text-center text-slate-500">No matching characters found.</td></tr>`;
+                return;
+            }
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-indigo-700">${row.script}</td>
+                    <td class="py-3 px-4 font-mono text-slate-600">${row.latin}</td>
+                    <td class="py-3 px-4 text-slate-500 text-xs">${row.notes}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Initial render
+        renderTable(transliterationData);
+
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = transliterationData.filter(item => 
+                item.script.toLowerCase().includes(query) || 
+                item.latin.toLowerCase().includes(query) ||
+                item.notes.toLowerCase().includes(query)
+            );
+            renderTable(filtered);
+        });
+    </script>
+</body>
+</html>
